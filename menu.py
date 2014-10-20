@@ -2,6 +2,7 @@ __author__ = 'Spencer'
 import sys
 from datetime import timedelta
 import datetime
+import time
 import pygal
 from pygal.style import CleanStyle
 import sqlite3
@@ -13,13 +14,13 @@ connection = sqlite3.connect("pings.sqlite")
 cursor = connection.cursor()
 
 # TIME STUFF
-today = datetime.datetime.now()
+today = datetime.datetime.now() - timedelta(days=0)
 yesterday = today - timedelta(days=1)
 last_week = today - timedelta(days=7)
 
 
 def average_ping_per_hour():
-    bar_chart = pygal.Line(styl=CleanStyle)
+    bar_chart = pygal.Line(style=CleanStyle)
     bar_chart.title = "Average ping (ms) per hour"
     bar_chart.x_labels = map(str, range(0, 24))
 
@@ -31,18 +32,17 @@ def average_ping_per_hour():
 
 
 # Internal use only. Paramter passed MUST be a datetime object.
-def _get_average_ping_from_time(time):
-    cursor.execute("SELECT * FROM pings WHERE datetime BETWEEN '{0}' AND '{1}'".format(time.isoformat(), datetime.datetime.today()))
+def _get_average_ping_from_time(datetime):
+    cursor.execute("SELECT * FROM pings WHERE datetime BETWEEN ? AND ?", [time.mktime(datetime.timetuple()), time.mktime(datetime.today().timetuple())])
+
     hour_summ = [0 for x in range(0, 24)]
     hour_count = [0 for x in range(0, 24)]
+
     for row in cursor:
-        try:
-            milliseconds = int(row[0])
-            hour = int(row[1][11:13])
-            hour_summ[hour] += milliseconds
-            hour_count[hour] += 1
-        except TypeError:
-            pass  # TODO: figure out how to handle "Reqeust Timed Out" packets. Not useful here?
+        date = datetime.fromtimestamp(row[2])
+        ping_ms = row[1]
+        hour_summ[date.hour]+=ping_ms
+        hour_count[date.hour]+=1
 
     for i in range(0, 24):
         try:
@@ -70,24 +70,25 @@ def quit():
 
 
 if __name__ == "__main__":
-    print "blah blah blah ping tracker app stuff"
-    app_main_loop = True
-    print "Supported options: box chart, average ping, quit"
-
-    try:
-        while (app_main_loop == True):
-            user_input = raw_input('Type an option: ').lower()
-
-            if user_input == "quit":
-                quit()
-            elif user_input == "average ping":
-                average_ping_per_hour()
-            elif user_input == "textfile":
-                to_textfile()
-            else:
-                print "Option not supported, please try again."
-                print  "Supported options are: box chart, picture, quit"
-    except KeyboardInterrupt:
-        quit()
-
-    print "Goodbye"
+    average_ping_per_hour()
+    # print "blah blah blah ping tracker app stuff"
+    # app_main_loop = True
+    # print "Supported options: box chart, average ping, quit"
+    #
+    # try:
+    #     while (app_main_loop == True):
+    #         user_input = raw_input('Type an option: ').lower()
+    #
+    #         if user_input == "quit":
+    #             quit()
+    #         elif user_input == "average ping":
+    #             average_ping_per_hour()
+    #         elif user_input == "textfile":
+    #             to_textfile()
+    #         else:
+    #             print "Option not supported, please try again."
+    #             print  "Supported options are: box chart, picture, quit"
+    # except KeyboardInterrupt:
+    #     quit()
+    #
+    # print "Goodbye"
