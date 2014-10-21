@@ -7,7 +7,6 @@ from datetime import datetime
 
 # REGEX strings
 # Frankly speaking, I don't really "get" regex, but these appear to work.
-
 # Matches all IPv4 addresses
 ip_regex = re.compile("[0-9]+.[0-9]+.[0-9]+.[0-9]+")
 # Matches the time string in windows ping utility
@@ -20,7 +19,7 @@ connection = sqlite3.connect("pings.sqlite")
 cursor = connection.cursor()
 
 # Holds all of the process objects
-# TODO: Determine if worthwhile to create cusotm Process class for managing sub-processes
+# TODO: Determine if worthwhile to create custom Process class for managing sub-processes
 processes = []
 
 # Ensure that the tables needed for the application exist when application launches.
