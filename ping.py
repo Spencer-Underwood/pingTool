@@ -5,15 +5,16 @@ import sys
 import re
 from datetime import datetime
 
-# REGEX
+# REGEX strings
 ip_regex = re.compile("[0-9]+.[0-9]+.[0-9]+.[0-9]+")
 time_regex = re.compile('time=[0-9]+ms|time<[0-9]+ms')
 
-# DB STUFF
+# DB Connection
 connection = sqlite3.connect("pings.sqlite")
 cursor = connection.cursor()
 
-# PING STUFF
+# Holds all of the process objects
+# TODO: Determine if worthwhile to create Process object for
 processes = []
 
 
@@ -21,12 +22,20 @@ def init():
     cursor.execute("CREATE TABLE IF NOT EXISTS hosts( address TEXT)")
     cursor.execute("CREATE TABLE IF NOT EXISTS pings(host_id INT, time INT, datetime DATETIME)")
 
-    with open("last_opened.txt", "r") as file:
-        date_thing = datetime.strptime(file.readline(), "%Y-%m-%d %H:%M:%S")
-        print "Last ran on date: ", date_thing
+    try:
+        with open("last_opened.txt", "r") as file:
+            date_thing = datetime.strptime(file.readline(), "%Y-%m-%d %H:%M:%S")
+            print "Last ran on date: ", date_thing
 
-    with open("last_opened.txt", "w") as file:
-        file.write(str(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
+    except IOError:
+        print "Application has never run before"
+
+    try:
+        with open("last_opened.txt", "w") as file:
+            file.write(str(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
+    except IOError:
+        print "Application has never run before"
+
 
 
 # TODO: Add comments later
