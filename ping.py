@@ -22,31 +22,6 @@ cursor = connection.cursor()
 # TODO: Determine if worthwhile to create custom Process class for managing sub-processes
 processes = []
 
-# Ensure that the tables needed for the application exist when application launches.
-def init():
-    # Creates the tables in the database if they do not exist already.
-    cursor.execute("CREATE TABLE IF NOT EXISTS hosts( address TEXT)")
-    cursor.execute("CREATE TABLE IF NOT EXISTS pings(host_id INT, time INT, datetime DATETIME)")
-
-    # Attempts to open the last_opeened.txt file and read the most recent date time stamp in it.
-    try:
-        # Opens the text file and closes it as soon as it leaves this code block to avoid resource leak
-        with open("last_opened.txt", "r") as file:
-            # Creates a date timestamp
-            date_thing = datetime.strptime(file.readline(), "%Y-%m-%d %H:%M:%S")
-            print "Last ran on date: ", date_thing
-    # If the file doesn't exist, inform the user
-    except IOError:
-        print "Application has never run before"
-
-    # Pretty much the same as before, but writes a date timestamp into the file instead of reads
-    try:
-        with open("last_opened.txt", "w") as file:
-            file.write(str(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
-    except IOError:
-        # I don't care if there's a file I/O problem since it doesn't affect anything
-        # Just don't crash
-        pass
 
 # Searches the database to see if there already exists a host with a given IPV4 address
 # If not, create one and add it to the database.
@@ -103,7 +78,29 @@ def tear_down():
 
 
 if __name__ == "__main__":
-    init()  # creates the database structure
+    # Creates the tables in the database if they do not exist already.
+    cursor.execute("CREATE TABLE IF NOT EXISTS hosts( address TEXT)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS pings(host_id INT, time INT, datetime DATETIME)")
+
+    # Attempts to open the last_opeened.txt file and read the most recent date time stamp in it.
+    try:
+        # Opens the text file and closes it as soon as it leaves this code block to avoid resource leak
+        with open("last_opened.txt", "r") as file:
+            # Creates a date timestamp
+            date_thing = datetime.strptime(file.readline(), "%Y-%m-%d %H:%M:%S")
+            print "Last ran on date: ", date_thing
+    # If the file doesn't exist, inform the user
+    except IOError:
+        print "Application has never run before"
+
+    # Pretty much the same as before, but writes a date timestamp into the file instead of reads
+    try:
+        with open("last_opened.txt", "w") as file:
+            file.write(str(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
+    except IOError:
+        # I don't care if there's a file I/O problem since it doesn't affect anything
+        # Just don't crash
+        pass
 
     #If any of the command line arguments are an IP address, create a new process to ping that host
     for arg in sys.argv[1:]:
