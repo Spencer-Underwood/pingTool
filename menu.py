@@ -45,9 +45,9 @@ def _get_average_ping_from_time(datetime):
     # Sums all the pings in each hour
     for row in cursor:
         date = datetime.fromtimestamp(row[2])
-        ping_ms = row[1]
-        hour_summ[date.hour]+=ping_ms
-        hour_count[date.hour]+=1
+        if row[1] is not None:
+            hour_summ[date.hour]+= row[1]
+            hour_count[date.hour]+=1
 
     # Calculates the average ping for each hour
     for i in range(0, 24):
